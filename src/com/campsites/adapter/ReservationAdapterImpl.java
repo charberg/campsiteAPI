@@ -75,6 +75,11 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 		checkDateRange(start, end);
 		
+		//Check if any overlap from existing reservations
+		if(!reservationMapper.getReservationsInDateRange(start, end).isEmpty()) {
+			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
+		}
+		
 	}
 	
 	public void checkDateRange(LocalDate startDate, LocalDate endDate) {
@@ -92,8 +97,6 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		if(ChronoUnit.DAYS.between(startDate, endDate) >= 3) {
 			throw new ValidationException("Reservations have a maximum length of 3 days");
 		}
-		
-		//Check if any overlap from existing reservations
 		
 	}
 
@@ -152,6 +155,12 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		}
 		
 		checkDateRange(start, end);
+		
+		//Check if any overlap from existing reservations, that are not itself
+		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(start, end);
+		if(!reses.isEmpty() && (reses.get(0).getId().equals(res.getId()))) {
+			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
+		}
 		
 		reservationMapper.updateReservationDates(reservationId, start, end);
 		

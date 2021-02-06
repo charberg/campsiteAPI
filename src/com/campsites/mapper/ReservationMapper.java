@@ -31,4 +31,7 @@ public interface ReservationMapper {
 	@Delete("DELETE FROM RESERVATIONS WHERE id=#{id}")
 	public void deleteReservation(@Param("id") Integer id);
 	
+	@Select("SELECT * FROM RESERVATIONS WHERE (startDate BETWEEN #{start} AND #{end}) OR (endDate BETWEEN #{start} AND #{end})")
+	public List<ReservationDTO> getReservationsInDateRange(@Param("start") LocalDate start, @Param("end") LocalDate end);
+	
 }
