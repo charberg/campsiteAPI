@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: campsiteService
+Implementation-Version: 1.0
+Built-By: Charberg
+Implementation-Vendor-Id: campsiteService
+Build-Jdk: 1.8.0_65
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/campsiteService
+Created-By: Maven Integration for Eclipse
+
