@@ -23,7 +23,7 @@ public interface ReservationMapper {
 	public ReservationDTO getReservationByNameAndDate(@Param("name") String name, @Param("start") LocalDate startDate);
 	
 	@Insert("INSERT INTO RESERVATIONS (campsiteId, name, email, startDate, endDate) VALUES (#{res.campsiteId}, #{res.name}, #{res.email}, #{res.startDate}, #{res.endDate})")
-	public Integer makeReservation(@Param("res") ReservationDTO res);
+	public void makeReservation(@Param("res") ReservationDTO res);
 	
 	@Update("UPDATE RESERVATIONS SET startDate = #{start}, endDate = #{end} WHERE id = #{id}")
 	public void updateReservationDates(@Param("id") Integer id, @Param("start") LocalDate start, @Param("end") LocalDate end);

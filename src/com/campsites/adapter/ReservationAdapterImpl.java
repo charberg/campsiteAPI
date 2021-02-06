@@ -10,6 +10,7 @@ import java.util.List;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,14 +29,16 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 
 		validateReservation(reservation);
 		
-		Integer id;
+		//This currently does *not* handle concurrent requests cleanly
+		//What I would do is have an event handler (Kafka perhaps) partitioned by campsiteId, to handle incoming events per campsite sequentially
+		//However, this feels a bit beyond scope for an example project.
 		try {
-			id = reservationMapper.makeReservation(new ReservationDTO(reservation));
+			reservationMapper.makeReservation(new ReservationDTO(reservation));
 		} catch (ParseException e) {
 			throw new RuntimeException("Unexpected date parse exception");
+		} catch(TooManyResultsException e) {
+			throw new ValidationException("Reservation conflicts with an existing reservation");
 		}
-		
-		reservationMapper.getReservation(id);
 		
 		return new Reservation(reservationMapper.getReservationByNameAndDate(reservation.getName(), LocalDate.parse(reservation.getStartDate())));
 		
