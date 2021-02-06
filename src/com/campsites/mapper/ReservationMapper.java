@@ -3,9 +3,11 @@ package com.campsites.mapper;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import com.campsites.model.ReservationDTO;
 
@@ -17,10 +19,16 @@ public interface ReservationMapper {
 	@Select("SELECT * FROM RESERVATIONS WHERE id=#{id}")
 	public ReservationDTO getReservation(@Param("id") Integer id);
 	
-	@Select("SELECT * FROM RESERVATIONS WHERE username=#{username} AND startDate=#{start}")
-	public ReservationDTO getReservationByUsernameAndDate(@Param("username") String username, @Param("start") LocalDate startDate);
+	@Select("SELECT * FROM RESERVATIONS WHERE name=#{name} AND startDate=#{start}")
+	public ReservationDTO getReservationByNameAndDate(@Param("name") String name, @Param("start") LocalDate startDate);
 	
-	@Insert("INSERT INTO RESERVATIONS (campsiteId, username, startDate, endDate) VALUES (#{res.campsiteId}, #{res.username}, #{res.startDate}, #{res.endDate})")
+	@Insert("INSERT INTO RESERVATIONS (campsiteId, name, email, startDate, endDate) VALUES (#{res.campsiteId}, #{res.name}, #{res.email}, #{res.startDate}, #{res.endDate})")
 	public Integer makeReservation(@Param("res") ReservationDTO res);
+	
+	@Update("UPDATE RESERVATIONS SET startDate = #{start}, endDate = #{end} WHERE id = #{id}")
+	public void updateReservationDates(@Param("id") Integer id, @Param("start") LocalDate start, @Param("end") LocalDate end);
+	
+	@Delete("DELETE FROM RESERVATIONS WHERE id=#{id}")
+	public void deleteReservation(@Param("id") Integer id);
 	
 }

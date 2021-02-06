@@ -3,7 +3,8 @@ package com.campsites.model;
 public class Reservation {
 
 	private Integer id;
-	private String username;
+	private String name;
+	private String email;
 	private Integer campsiteId;
 	private String startDate;
 	private String endDate;
@@ -15,7 +16,8 @@ public class Reservation {
 	public Reservation(ReservationDTO res) {
 		this.id = res.getId();
 		this.campsiteId = res.getCampsiteId();
-		this.username = res.getUsername();
+		this.name = res.getName();
+		this.email = res.getEmail();
 		this.startDate = res.getStartDate().toString();
 		this.endDate = res.getEndDate().toString();
 	}
@@ -25,12 +27,6 @@ public class Reservation {
 	}
 	public void setId(Integer id) {
 		this.id = id;
-	}
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
 	}
 	public Integer getCampsiteId() {
 		return campsiteId;
@@ -49,6 +45,22 @@ public class Reservation {
 	}
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }

@@ -12,4 +12,8 @@ public interface ReservationAdapter {
 	
 	public Reservation makeReservation(Reservation reservation);
 	
+	public Reservation updateReservation(Integer reservationId, Reservation reservation);
+	
+	public void deleteReservation(Integer reservationId);
+	
 }

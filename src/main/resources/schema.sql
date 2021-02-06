@@ -9,7 +9,8 @@ INSERT INTO CAMPSITES (name, description) VALUES ('volcano island', 'dont worry 
 CREATE TABLE IF NOT EXISTS `RESERVATIONS`(
     `id`          INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `campsiteId`       INTEGER NOT NULL,
-    `username`      VARCHAR(20) NOT NULL,
+    `name`      VARCHAR(40) NOT NULL,
+    `email`      VARCHAR(40) NOT NULL,
     `startDate`		DATE NOT NULL,
     `endDate`		DATE NOT NULL,
     FOREIGN KEY(campsiteId) REFERENCES CAMPSITES(id) ON DELETE CASCADE

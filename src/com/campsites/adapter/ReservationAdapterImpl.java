@@ -6,7 +6,6 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 
@@ -14,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.campsites.advice.EntityNotFoundException;
 import com.campsites.mapper.ReservationMapper;
 import com.campsites.model.Reservation;
 import com.campsites.model.ReservationDTO;
@@ -37,14 +37,18 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 		reservationMapper.getReservation(id);
 		
-		return new Reservation(reservationMapper.getReservationByUsernameAndDate(reservation.getUsername(), LocalDate.parse(reservation.getStartDate())));
+		return new Reservation(reservationMapper.getReservationByNameAndDate(reservation.getName(), LocalDate.parse(reservation.getStartDate())));
 		
 	}
 	
 	private void validateReservation(Reservation res) {
 		
-		if(StringUtils.isBlank(res.getUsername())) {
-			throw new ValidationException("username field cannot be blank");
+		if(StringUtils.isBlank(res.getName())) {
+			throw new ValidationException("name field cannot be blank");
+		}
+		
+		if(StringUtils.isBlank(res.getEmail())) {
+			throw new ValidationException("email field cannot be blank");
 		}
 		
 		if(res.getCampsiteId() == null) {
@@ -59,19 +63,26 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 			throw new ValidationException("endDate field cannot be blank");
 		}
 		
-		//Cut off times if specified
-		LocalDate today = LocalDate.now();
-		LocalDate startDate = null;
-		LocalDate endDate = null;
+		LocalDate start = null;
+		LocalDate end = null;
+		
 		try {
-			startDate = LocalDate.parse(res.getStartDate());
-			endDate = LocalDate.parse(res.getEndDate());
+			start = LocalDate.parse(res.getStartDate());
+			end = LocalDate.parse(res.getEndDate());
 		} catch(DateTimeParseException e) {
 			throw new ValidationException("Date format is 'YYYY-MM-DD'");
 		}
 		
-		if(startDate.isBefore(today)) {
-			throw new ValidationException("startDate cannot be in the past");
+		checkDateRange(start, end);
+		
+	}
+	
+	public void checkDateRange(LocalDate startDate, LocalDate endDate) {
+		//Cut off times if specified
+		LocalDate today = LocalDate.now();
+		
+		if(startDate.isBefore(today) || startDate.isEqual(today)) {
+			throw new ValidationException("startDate must be ahead of today");
 		}
 		
 		if(endDate.isBefore(startDate)) {
@@ -81,6 +92,8 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		if(ChronoUnit.DAYS.between(startDate, endDate) >= 3) {
 			throw new ValidationException("Reservations have a maximum length of 3 days");
 		}
+		
+		//Check if any overlap from existing reservations
 		
 	}
 
@@ -95,7 +108,55 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 	}
 
 	public Reservation getReservation(Integer reservationId) {
-		return new Reservation(reservationMapper.getReservation(reservationId));
+		return new Reservation(getReservationById(reservationId));
+	}
+
+	@Override
+	public void deleteReservation(Integer reservationId) {
+		
+		//Check if requested reservation exists
+		getReservationById(reservationId);
+		
+		reservationMapper.deleteReservation(reservationId);
+		
+	}
+	
+	private ReservationDTO getReservationById(Integer reservationId) {
+		
+		ReservationDTO res = reservationMapper.getReservation(reservationId);
+		
+		if(res == null) throw new EntityNotFoundException(String.format("Reservation with id %d not found", reservationId));
+		
+		return res;
+		
+	}
+
+	@Override
+	public Reservation updateReservation(Integer reservationId, Reservation reservation) {
+
+		if(StringUtils.isBlank(reservation.getStartDate()) && StringUtils.isBlank(reservation.getEndDate())) {
+			throw new ValidationException("startDate or endDate are required for reservation update");
+		}
+		
+		ReservationDTO res = getReservationById(reservationId);
+		
+		LocalDate start = null;
+		LocalDate end = null;
+		
+		try {
+			//Need to compare the 'new' date range. Only start *or* end might be provided.
+			start = StringUtils.isBlank(reservation.getStartDate()) ? res.getStartDate() : LocalDate.parse(reservation.getStartDate());
+			end = StringUtils.isBlank(reservation.getEndDate()) ? res.getEndDate() : LocalDate.parse(reservation.getEndDate());
+		} catch(DateTimeParseException e) {
+			throw new ValidationException("Date format is 'YYYY-MM-DD'");
+		}
+		
+		checkDateRange(start, end);
+		
+		reservationMapper.updateReservationDates(reservationId, start, end);
+		
+		return new Reservation(getReservationById(reservationId));
+		
 	}
 
 }
