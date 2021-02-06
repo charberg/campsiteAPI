@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import com.campsites.advice.EntityNotFoundException;
 import com.campsites.mapper.ReservationMapper;
 import com.campsites.model.Reservation;
-import com.campsites.model.ReservationDTO;
+import com.campsites.model.Reservation;
 
 @Component
 public class ReservationAdapterImpl implements ReservationAdapter {
@@ -33,14 +33,12 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		//What I would do is have an event handler (Kafka perhaps) partitioned by campsiteId, to handle incoming events per campsite sequentially
 		//However, this feels a bit beyond scope for an example project.
 		try {
-			reservationMapper.makeReservation(new ReservationDTO(reservation));
-		} catch (ParseException e) {
-			throw new RuntimeException("Unexpected date parse exception");
+			reservationMapper.makeReservation(reservation);
 		} catch(TooManyResultsException e) {
 			throw new ValidationException("Reservation conflicts with an existing reservation");
 		}
 		
-		return new Reservation(reservationMapper.getReservationByNameAndDate(reservation.getName(), LocalDate.parse(reservation.getStartDate())));
+		return reservationMapper.getReservationByNameAndDate(reservation.getName(), reservation.getStartDate());
 		
 	}
 	
@@ -66,20 +64,10 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 			throw new ValidationException("endDate field cannot be blank");
 		}
 		
-		LocalDate start = null;
-		LocalDate end = null;
-		
-		try {
-			start = LocalDate.parse(res.getStartDate());
-			end = LocalDate.parse(res.getEndDate());
-		} catch(DateTimeParseException e) {
-			throw new ValidationException("Date format is 'YYYY-MM-DD'");
-		}
-		
-		checkDateRange(start, end);
+		checkDateRange(res.getStartDate(), res.getEndDate());
 		
 		//Check if any overlap from existing reservations
-		if(!reservationMapper.getReservationsInDateRange(res.getCampsiteId(), start, end).isEmpty()) {
+		if(!reservationMapper.getReservationsInDateRange(res.getCampsiteId(), res.getStartDate(), res.getEndDate()).isEmpty()) {
 			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
 		}
 		
@@ -114,17 +102,17 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 	}
 
 	public List<Reservation> getReservations() {
-		List<ReservationDTO> reses = reservationMapper.getReservations();
+		List<Reservation> reses = reservationMapper.getReservations();
 		List<Reservation> response = new ArrayList<>();
 		
-		for(ReservationDTO res : reses) {
-			response.add(new Reservation(res));
+		for(Reservation res : reses) {
+			response.add(res);
 		}
 		return response;
 	}
 
 	public Reservation getReservation(Integer reservationId) {
-		return new Reservation(getReservationById(reservationId));
+		return getReservationById(reservationId);
 	}
 
 	@Override
@@ -137,9 +125,9 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 	}
 	
-	private ReservationDTO getReservationById(Integer reservationId) {
+	private Reservation getReservationById(Integer reservationId) {
 		
-		ReservationDTO res = reservationMapper.getReservation(reservationId);
+		Reservation res = reservationMapper.getReservation(reservationId);
 		
 		if(res == null) throw new EntityNotFoundException(String.format("Reservation with id %d not found", reservationId));
 		
@@ -150,11 +138,11 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 	@Override
 	public Reservation updateReservation(Integer reservationId, Reservation reservation) {
 
-		if(StringUtils.isBlank(reservation.getStartDate()) && StringUtils.isBlank(reservation.getEndDate())) {
+		if(reservation.getStartDate() == null && reservation.getEndDate() == null) {
 			throw new ValidationException("startDate or endDate are required for reservation update");
 		}
 		
-		ReservationDTO res = getReservationById(reservationId);
+		Reservation res = getReservationById(reservationId);
 		
 		if(res == null) {
 			throw new EntityNotFoundException(String.format("Reservation with id %d not found", reservationId));
@@ -165,8 +153,8 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 		try {
 			//Need to compare the 'new' date range. Only start *or* end might be provided.
-			start = StringUtils.isBlank(reservation.getStartDate()) ? res.getStartDate() : LocalDate.parse(reservation.getStartDate());
-			end = StringUtils.isBlank(reservation.getEndDate()) ? res.getEndDate() : LocalDate.parse(reservation.getEndDate());
+			start = reservation.getStartDate() == null ? res.getStartDate() : reservation.getStartDate();
+			end = reservation.getEndDate() == null ? res.getEndDate() : reservation.getEndDate();
 		} catch(DateTimeParseException e) {
 			throw new ValidationException("Date format is 'YYYY-MM-DD'");
 		}
@@ -174,14 +162,14 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		checkDateRange(start, end);
 		
 		//Check if any overlap from existing reservations, that are not itself
-		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(res.getCampsiteId(), start, end);
+		List<Reservation> reses = reservationMapper.getReservationsInDateRange(res.getCampsiteId(), start, end);
 		if(!reses.isEmpty() && (reses.get(0).getId().equals(res.getId()))) {
 			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
 		}
 		
 		reservationMapper.updateReservationDates(reservationId, start, end);
 		
-		return new Reservation(getReservationById(reservationId));
+		return getReservationById(reservationId);
 		
 	}
 

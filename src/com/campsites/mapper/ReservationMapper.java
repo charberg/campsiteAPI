@@ -9,21 +9,21 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import com.campsites.model.ReservationDTO;
+import com.campsites.model.Reservation;
 
 public interface ReservationMapper {
 	
 	@Select("SELECT * FROM RESERVATIONS")
-	public List<ReservationDTO> getReservations();
+	public List<Reservation> getReservations();
 	
 	@Select("SELECT * FROM RESERVATIONS WHERE id=#{id}")
-	public ReservationDTO getReservation(@Param("id") Integer id);
+	public Reservation getReservation(@Param("id") Integer id);
 	
 	@Select("SELECT * FROM RESERVATIONS WHERE name=#{name} AND startDate=#{start}")
-	public ReservationDTO getReservationByNameAndDate(@Param("name") String name, @Param("start") LocalDate startDate);
+	public Reservation getReservationByNameAndDate(@Param("name") String name, @Param("start") LocalDate startDate);
 	
 	@Insert("INSERT INTO RESERVATIONS (campsiteId, name, email, startDate, endDate) VALUES (#{res.campsiteId}, #{res.name}, #{res.email}, #{res.startDate}, #{res.endDate})")
-	public void makeReservation(@Param("res") ReservationDTO res);
+	public void makeReservation(@Param("res") Reservation res);
 	
 	@Update("UPDATE RESERVATIONS SET startDate = #{start}, endDate = #{end} WHERE id = #{id}")
 	public void updateReservationDates(@Param("id") Integer id, @Param("start") LocalDate start, @Param("end") LocalDate end);
@@ -32,6 +32,6 @@ public interface ReservationMapper {
 	public void deleteReservation(@Param("id") Integer id);
 	
 	@Select("SELECT * FROM RESERVATIONS WHERE campsiteId = #{campsiteId} AND (startDate BETWEEN #{start} AND #{end}) OR (endDate BETWEEN #{start} AND #{end}) ORDER BY startDate ASC")
-	public List<ReservationDTO> getReservationsInDateRange(@Param("campsiteId") Integer campsiteId, @Param("start") LocalDate start, @Param("end") LocalDate end);
+	public List<Reservation> getReservationsInDateRange(@Param("campsiteId") Integer campsiteId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 	
 }

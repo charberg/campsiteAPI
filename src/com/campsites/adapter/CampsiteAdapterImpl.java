@@ -15,7 +15,7 @@ import com.campsites.advice.EntityNotFoundException;
 import com.campsites.mapper.CampsiteMapper;
 import com.campsites.mapper.ReservationMapper;
 import com.campsites.model.AvailabilityRequest;
-import com.campsites.model.ReservationDTO;
+import com.campsites.model.Reservation;
 
 @Component
 public class CampsiteAdapterImpl implements CampsiteAdapter {
@@ -63,13 +63,13 @@ public class CampsiteAdapterImpl implements CampsiteAdapter {
 		
 		//Get reservations in date range, to find the difference
 		//This method returns in a sorted order, by startDate, ascending
-		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(request.getCampsiteId(), start, end);
+		List<Reservation> reses = reservationMapper.getReservationsInDateRange(request.getCampsiteId(), start, end);
 		
 		//Iterate through the reservations. If no reservation on a date in our range, add date to our response
 		//If there is a reservation, skip
 		
-		Iterator<ReservationDTO> it = reses.iterator();
-		ReservationDTO nextRes = it.hasNext() ? it.next() : null;
+		Iterator<Reservation> it = reses.iterator();
+		Reservation nextRes = it.hasNext() ? it.next() : null;
 		List<LocalDate> response = new ArrayList<>();
 		
 		while(!start.isAfter(end)) {

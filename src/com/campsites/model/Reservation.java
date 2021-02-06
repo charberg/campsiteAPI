@@ -1,25 +1,22 @@
 package com.campsites.model;
 
-public class Reservation {
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.Locale;
 
+public class Reservation {
+	
 	private Integer id;
+	private Integer campsiteId;
 	private String name;
 	private String email;
-	private Integer campsiteId;
-	private String startDate;
-	private String endDate;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	
 	public Reservation() {
 		
-	}
-	
-	public Reservation(ReservationDTO res) {
-		this.id = res.getId();
-		this.campsiteId = res.getCampsiteId();
-		this.name = res.getName();
-		this.email = res.getEmail();
-		this.startDate = res.getStartDate().toString();
-		this.endDate = res.getEndDate().toString();
 	}
 	
 	public Integer getId() {
@@ -34,19 +31,7 @@ public class Reservation {
 	public void setCampsiteId(Integer campsiteId) {
 		this.campsiteId = campsiteId;
 	}
-	public String getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(String startDate) {
-		this.startDate = startDate;
-	}
-	public String getEndDate() {
-		return endDate;
-	}
-	public void setEndDate(String endDate) {
-		this.endDate = endDate;
-	}
-
+	
 	public String getName() {
 		return name;
 	}
@@ -61,6 +46,19 @@ public class Reservation {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
 	}
 	
 }
