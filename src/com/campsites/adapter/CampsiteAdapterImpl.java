@@ -11,6 +11,8 @@ import javax.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.campsites.advice.EntityNotFoundException;
+import com.campsites.mapper.CampsiteMapper;
 import com.campsites.mapper.ReservationMapper;
 import com.campsites.model.AvailabilityRequest;
 import com.campsites.model.ReservationDTO;
@@ -19,10 +21,21 @@ import com.campsites.model.ReservationDTO;
 public class CampsiteAdapterImpl implements CampsiteAdapter {
 
 	@Autowired
+	private CampsiteMapper campsiteMapper;
+	
+	@Autowired
 	private ReservationMapper reservationMapper;
 	
 	@Override
 	public List<LocalDate> getCampsiteAvailability(AvailabilityRequest request) {
+		
+		if(request.getCampsiteId() == null) {
+			throw new ValidationException("campsiteId is a required field");
+		}
+		
+		if(campsiteMapper.getCampsite(request.getCampsiteId()) == null) {
+			throw new EntityNotFoundException(String.format("Campsite with id %d not found", request.getCampsiteId()));
+		}
 		
 		//Default to startDate of tomorrow (as today cannot be booked)
 		LocalDate today = LocalDate.now();
@@ -50,7 +63,7 @@ public class CampsiteAdapterImpl implements CampsiteAdapter {
 		
 		//Get reservations in date range, to find the difference
 		//This method returns in a sorted order, by startDate, ascending
-		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(start, end);
+		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(request.getCampsiteId(), start, end);
 		
 		//Iterate through the reservations. If no reservation on a date in our range, add date to our response
 		//If there is a reservation, skip

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class AvailabilityRequest {
 
+	private Integer campsiteId;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private Integer days;
@@ -25,6 +26,12 @@ public class AvailabilityRequest {
 	}
 	public void setDays(Integer days) {
 		this.days = days;
+	}
+	public Integer getCampsiteId() {
+		return campsiteId;
+	}
+	public void setCampsiteId(Integer campsiteId) {
+		this.campsiteId = campsiteId;
 	}
 	
 }

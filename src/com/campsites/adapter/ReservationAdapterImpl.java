@@ -76,7 +76,7 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		checkDateRange(start, end);
 		
 		//Check if any overlap from existing reservations
-		if(!reservationMapper.getReservationsInDateRange(start, end).isEmpty()) {
+		if(!reservationMapper.getReservationsInDateRange(res.getCampsiteId(), start, end).isEmpty()) {
 			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
 		}
 		
@@ -96,6 +96,16 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 		if(ChronoUnit.DAYS.between(startDate, endDate) >= 3) {
 			throw new ValidationException("Reservations have a maximum length of 3 days");
+		}
+		
+		LocalDate inAMonth = today.plus(31, ChronoUnit.DAYS);
+		
+		if(startDate.isEqual(inAMonth) || startDate.isAfter(inAMonth)) {
+			throw new ValidationException("Reservations can only be made a month in advance");
+		}
+		
+		if(endDate.isEqual(inAMonth) || endDate.isAfter(inAMonth)) {
+			throw new ValidationException("Reservations can only be made a month in advance");
 		}
 		
 	}
@@ -143,6 +153,10 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		
 		ReservationDTO res = getReservationById(reservationId);
 		
+		if(res == null) {
+			throw new EntityNotFoundException(String.format("Reservation with id %d not found", reservationId));
+		}
+		
 		LocalDate start = null;
 		LocalDate end = null;
 		
@@ -157,7 +171,7 @@ public class ReservationAdapterImpl implements ReservationAdapter {
 		checkDateRange(start, end);
 		
 		//Check if any overlap from existing reservations, that are not itself
-		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(start, end);
+		List<ReservationDTO> reses = reservationMapper.getReservationsInDateRange(res.getCampsiteId(), start, end);
 		if(!reses.isEmpty() && (reses.get(0).getId().equals(res.getId()))) {
 			throw new ValidationException("Reservation conflicts with existing reservation - Please check available dates");
 		}

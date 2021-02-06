@@ -1,0 +1,236 @@
+openapi: 3.0.0
+info:
+  description: |- 
+     <p>This is an API for campsite reservation management.<br>  
+     <b><br>Validation Code Definition:</b><br>
+     <li><b>400</b> - Validation Error</li>        
+     <li><b>404</b> - Entities Not Found</li>
+     <li><b>500</b> - Unexpected API Error, Internal Server Error</li>  
+     </ul> </p>
+  version: 1.0.0
+  title: campsiteService
+  contact:
+    name: ''
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Campsites
+  - name: Health
+  - name: Reservations
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Check Health
+      description: Health Endpoint
+      operationId: getHealth
+      responses:
+        '200':
+          description: Success
+  /campsites:
+    get:
+      tags:
+        - Campsites
+      summary: Get all campsites
+      description: Get Campsites
+      operationId: getCampsites
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampsiteCollection'
+  /campsites/{campsiteId}:
+    get:
+      tags:
+        - Campsites
+      summary: Get all campsites
+      description: Get Campsite
+      operationId: getCampsiteById
+      parameters:
+        - name: campsiteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campsite'
+        '404':
+          description: Campsite not found
+  /campsites/availability:
+    post:
+      tags:
+        - Campsites
+      summary: Get campsite availability
+      description: Get Campsite Availability
+      operationId: getCampsiteAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availability'
+  /reservations:
+    get:
+      tags:
+        - Reservations
+      summary: Get all reservations
+      description: Get Reservations
+      operationId: getReservations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationCollection'
+    post:
+      tags:
+        - Reservations
+      summary: Make reservations
+      description: Make Reservation
+      operationId: makeReservation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+  /reservations/{reservationId}:
+    get:
+      tags:
+        - Reservations
+      summary: Get reservation
+      description: Get Reservation
+      operationId: getReservationById
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Reservation not found
+    put:
+      tags:
+        - Reservations
+      summary: Update reservation
+      description: Update Reservation - only startDate and endDate can be updated
+      operationId: updateReservation
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+    delete:
+      tags:
+        - Reservations
+      summary: Delete reservation
+      description: Delete Reservation
+      operationId: deleteReservation
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Reservation not found
+components:   
+  schemas:
+    CampsiteCollection:
+      type: array
+      items: 
+        $ref: '#/components/schemas/Campsite' 
+    Campsite:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+    AvailabilityRequest:
+      type: object
+      properties:
+        campsiteId:
+          type: integer
+        startDate:
+          type: string
+          format: date
+          description: Optional param - If not set, defaults to tomorrow
+        endDate:
+          type: string
+          format: date
+          description: Optional param - If not set, defaults to 30 days after startDate
+        days:
+          type: integer
+          description: Optional param - number of days from startDate to check availability for. Max value of 30
+    Availability:
+      type: array
+      items: 
+        type: string
+    ReservationCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Reservation'
+    Reservation:
+      type: object
+      properties:
+        campsiteId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      
